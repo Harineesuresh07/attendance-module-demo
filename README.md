@@ -132,7 +132,7 @@
 | **2** | **Auth & RBAC Core** | Prazilla Pearl + Prisha Aditi | JWT auth, refresh tokens, login/logout endpoints, role-permission middleware for all 6 roles. Seed script for test users. | Module 1 (schema) |
 | **3** | **User & Role Management** | Prisha Aditi | CRUD APIs for students, trainers, faculty, mentors, coordinators, admins. Profile view/edit. | Module 1, 2 |
 | **4** | **Batch & Session Management** | Pon Swetha | Create/edit batches, assign trainers, schedule sessions, view batch roster. | Module 1, 2 |
-| **5** | **Attendance Module** | Sree Harini + Harinee S | Server-time-locked check-in (closes 8:05 AM), prevents tampering. QR code scan or manual entry. Export attendance reports. | Module 1, 2, 4 |
+| **5** | **Attendance Module** | Sree Harini + Harinee S (may be reassigned) | Server-time-locked check-in (closes 8:05 AM), prevents tampering. QR code scan or manual entry. Export attendance reports. | Module 1, 2, 4 |
 | **6** | **Assessment & Performance Capture** | Meenakshi | Ingest marks, coding test scores, contest results, assignments. Supports bulk CSV upload. | Module 1, 2, 4 |
 | **7** | **Training History Module** | Ayesha Siddiqa | Chronological log of sessions attended, topics covered, scores over time. Student-facing timeline view. | Module 1, 2, 4, 6 |
 | **8** | **Trainer Feedback Module** | Tisha Angel | Structured feedback form (effort rating, participation, notes) per student per session. Searchable feedback history. | Module 1, 2, 4 |
