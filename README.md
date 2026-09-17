@@ -254,8 +254,8 @@ Module 20 (Testing & Deploy) [Day 18-21] — final integration
 | **Meenakshi** | AI/ML | 3rd | 6 (Assessment Capture), 12 (Risk Engine) | ML model validation |
 | **Ayesha Siddiqa** | AI/ML | 3rd | 7 (Training History), 14 (Mentor Alerts), 18 (Leaderboard) | Data analysis support |
 | **Pon Swetha** | Fullstack | 2nd | 4 (Batch Mgmt), 10 (Dashboard API), 11 (Dashboard UI), 17 (Events) | Frontend component library |
-| **Sree Harini** | Fullstack | 2nd | 5 (Attendance), 11 (Dashboard UI), 17 (Events) | Frontend testing |
-| **Harinee S** | AI/ML | 2nd | 5 (Attendance logic), 14 (Mentor Alerts), 18 (Leaderboard) | Risk scoring validation |
+| **Sree Harini** | AI/ML | 2nd | 5 (Attendance), 11 (Dashboard UI), 17 (Events) | Frontend testing |
+| **Harinee S** | Fullstack | 2nd | 5 (Attendance logic), 14 (Mentor Alerts), 18 (Leaderboard) | Risk scoring validation |
 | **Prazilla Pearl** | ML/Fullstack | 2nd | 2 (Auth & RBAC), 15 (Intervention API), 16 (Intervention UI) | Bridge between backend/frontend |
 | **Tisha Angel** | AI/ML | 3rd | 8 (Trainer Feedback), 15 (Intervention API) | Feedback text analysis (future) |
 | **Prisha Aditi** | ML/Fullstack | 2nd | 2 (Auth & RBAC), 3 (User Mgmt), 16 (Intervention UI) | Testing & QA support |
