@@ -7,6 +7,8 @@ import BulkUpload from "./pages/assessments/BulkUpload";
 import BatchList from "./pages/batches/BatchList";
 import BatchCreate from "./pages/batches/BatchCreate";
 import BatchDetail from "./pages/batches/BatchDetail";
+import MarkAttendance from "./pages/attendance/MarkAttendance";
+import SessionAttendance from "./pages/attendance/SessionAttendance";
 
 function App() {
   return (
@@ -21,6 +23,9 @@ function App() {
           </Link>
           <Link to="/batches" className="text-gray-600 hover:text-gray-900">
             Batches
+          </Link>
+          <Link to="/attendance" className="text-gray-600 hover:text-gray-900">
+            Attendance
           </Link>
         </div>
       </nav>
@@ -37,6 +42,8 @@ function App() {
           <Route path="/batches/create" element={<BatchCreate />} />
           <Route path="/batches/:id/edit" element={<BatchCreate />} />
           <Route path="/batches/:id" element={<BatchDetail />} />
+          <Route path="/attendance/mark/:sessionId" element={<MarkAttendance />} />
+          <Route path="/attendance/session/:sessionId" element={<SessionAttendance />} />
         </Routes>
       </main>
     </div>

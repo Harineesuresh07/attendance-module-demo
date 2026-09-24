@@ -8,6 +8,7 @@ import { generalRateLimit } from './middleware/rate-limit.middleware';
 import authRoutes from './routes/auth.routes';
 import usersRoutes from './routes/users.routes';
 import assessmentRoutes from './routes/assessments.routes';
+import attendanceRoutes from './routes/attendance.routes';
 import batchRoutes from './routes/batches.routes';
 import sessionRoutes from './routes/sessions.routes';
 
@@ -30,6 +31,7 @@ app.use('/auth', authRoutes);
 app.use('/users', usersRoutes);
 app.use('/admin/users', usersRoutes);
 app.use('/api/assessments', assessmentRoutes);
+app.use('/api/attendance', attendanceRoutes);
 app.use('/api/batches', batchRoutes);
 app.use('/api/sessions', sessionRoutes);
 
