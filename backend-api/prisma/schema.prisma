@@ -126,6 +126,8 @@ model User {
 
   assessmentResults AssessmentResult[]
 
+  studentQuestionScores StudentQuestionScore[]
+
   feedbackReceived Feedback[] @relation("StudentFeedback")
   feedbackGiven    Feedback[] @relation("TrainerFeedback")
 
@@ -262,10 +264,13 @@ model Assessment {
   assessmentDate DateTime
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   batch Batch @relation(fields: [batchId], references: [id])
 
   results AssessmentResult[]
+
+  sections AssessmentSection[]
 }
 
 model AssessmentResult {
@@ -286,6 +291,62 @@ model AssessmentResult {
   student User @relation(fields: [studentId], references: [id])
 
   @@unique([assessmentId, studentId])
+}
+
+model AssessmentSection {
+  id String @id @default(uuid())
+  @@map("assessment_sections")
+
+  assessmentId String
+
+  title String
+
+  sortOrder Int @default(0)
+
+  weightage Float?
+
+  createdAt DateTime @default(now())
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  questions AssessmentQuestion[]
+}
+
+model AssessmentQuestion {
+  id String @id @default(uuid())
+  @@map("assessment_questions")
+
+  sectionId String
+
+  label String
+
+  maxScore Float
+
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  section AssessmentSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  studentScores StudentQuestionScore[]
+}
+
+model StudentQuestionScore {
+  id String @id @default(uuid())
+  @@map("student_question_scores")
+
+  questionId String
+  studentId  String
+
+  score Float
+
+  createdAt DateTime @default(now())
+
+  question AssessmentQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  student User @relation(fields: [studentId], references: [id], onDelete: Restrict)
+
+  @@unique([questionId, studentId])
 }
 
 model Feedback {

@@ -3,9 +3,28 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@prisma/client": "^6.19.3"
+    "@prisma/client": "^6.19.3",
+    "cors": "^2.8.6",
+    "csv-parse": "^7.0.2",
+    "express": "^5.2.1",
+    "multer": "^2.4.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
-    "prisma": "^6.19.3"
+    "@swc/core": "^1.16.2",
+    "@swc/jest": "^0.2.39",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^26.6.2",
+    "@types/supertest": "^7.2.1",
+    "@typescript/typescript6": "npm:typescript@^5.9.3",
+    "jest": "^30.5.2",
+    "prisma": "^6.19.3",
+    "supertest": "^7.3.0",
+    "ts-jest": "^29.4.13",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
   }
 }
