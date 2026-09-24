@@ -36,11 +36,14 @@ npx jest --verbose
 # Run a single test file
 npx jest src/__tests__/assessments.test.ts
 npx jest src/__tests__/assessments.integration.test.ts
+npx jest src/__tests__/batches.test.ts
+npx jest src/__tests__/batches.integration.test.ts
 npx jest tests/auth-rbac.test.ts
 
 # Run tests matching a pattern
 npx jest --testPathPattern="auth"
-npx jest --testPathPattern="assessments.test"
+npx jest --testPathPattern="assessments"
+npx jest --testPathPattern="batches"
 ```
 
 ## Test Framework
@@ -52,7 +55,7 @@ npx jest --testPathPattern="assessments.test"
 
 ## Test Files and What They Cover
 
-The suite has **179 tests** across **3 test files**, covering two completed modules.
+The suite has **284 tests** across **5 test files**, covering three completed modules.
 
 ---
 
@@ -121,6 +124,49 @@ Pure unit tests covering the authentication system, role-based access control, a
 | **Login Security Rules** | 6 | Null passwordHash rejection, PENDING user rejection, INACTIVE user rejection, wrong password (bcrypt), correct password (bcrypt), generic error message for both not-found and wrong-password, per-account rate limiting |
 | **Audit Logging** | 3 | audit_logs:read is ADMIN-only, CSV user creation audit action, role change audit with old/new values |
 | **Seed Configuration** | 4 | All 6 roles defined, 67 unique permission codes, no duplicate codes, every role has at least one permission |
+
+---
+
+### 4. `src/__tests__/batches.test.ts` — Batch & Session Validators & Logic (Unit)
+
+**Module:** Ticket 6 — Batch & Session Management
+
+Pure unit tests validating the Joi schemas for batches, student/trainer assignment, and sessions. Also tests the delete-safeguard logic and session time validation.
+
+| Section | Tests | What it covers |
+|---------|-------|----------------|
+| **createBatchSchema** | 7 | Required fields (name, startDate as ISO date), optional fields (department, endDate, description), rejects empty/missing name, invalid dates |
+| **updateBatchSchema** | 5 | Partial updates, empty object allowed, rejects empty name, accepts date updates, rejects invalid dates |
+| **assignStudentSchema** | 3 | Valid UUID, rejects invalid UUID, rejects missing studentId |
+| **assignTrainerSchema** | 3 | Valid UUID, rejects invalid UUID, rejects missing trainerId |
+| **createSessionSchema** | 10 | Valid session with all fields, optional topic, rejects empty title, missing/invalid trainerId, invalid dates, endTime before/equal to startTime with error message check |
+| **updateSessionSchema** | 6 | Partial update, empty object, rejects empty title, rejects endTime before startTime, accepts valid time update, accepts endTime alone |
+| **Batch delete safeguard logic** | 3 | Blocks deletion when sessions exist, blocks when assessments exist, allows when neither exist |
+| **Session delete safeguard logic** | 3 | Blocks deletion when attendance exists, blocks when feedback exists, allows when neither exist |
+| **Session time validation logic** | 3 | Rejects equal times, rejects end before start, accepts end after start |
+
+---
+
+### 5. `src/__tests__/batches.integration.test.ts` — Batch & Session API Routes (Integration)
+
+**Module:** Ticket 6 — Batch & Session Management
+
+HTTP-level tests using **supertest** against an Express app with both `/api/batches` and `/api/sessions` routes mounted. The service layer is fully mocked.
+
+| Section | Tests | What it covers |
+|---------|-------|----------------|
+| **POST /api/batches** | 5 | Create batch — 201 valid, 400 missing/empty name, 400 invalid date, 201 with all optional fields |
+| **GET /api/batches** | 2 | List batches — 200 with data, 200 empty array |
+| **GET /api/batches/:id** | 2 | Get single — 200 success, 404 not found |
+| **PUT /api/batches/:id** | 3 | Update — 200 valid, 400 empty name, 404 not found |
+| **DELETE /api/batches/:id** | 4 | Delete — 200 success, 404 not found, 409 has sessions, 409 has assessments |
+| **Roster (Students)** | 7 | GET roster (200, 404 batch), POST add student (201, 400 invalid UUID, 404 not found, 409 duplicate), DELETE remove student (200, 404 not in batch) |
+| **Trainers** | 7 | GET trainers (200, 404 batch), POST assign trainer (201, 400 invalid UUID, 404 not found, 409 duplicate), DELETE remove trainer (200, 404 not assigned) |
+| **Batch-scoped sessions** | 8 | GET list sessions (200, 404 batch), POST create session (201, 400 empty title, 400 invalid trainerId, 400 endTime before startTime, 404 batch not found, 404 trainer not found) |
+| **GET /api/sessions/:id** | 2 | Get session — 200 success, 404 not found |
+| **PUT /api/sessions/:id** | 5 | Update session — 200 valid, 400 empty title, 400 endTime before startTime, 404 not found, 400 service time conflict |
+| **DELETE /api/sessions/:id** | 4 | Delete session — 200 success, 404 not found, 409 has attendance, 409 has feedback |
+| **Service call verification** | 12 | Verifies correct arguments passed to each service function (batchId, studentId, trainerId, session body, etc.) |
 
 ---
 
