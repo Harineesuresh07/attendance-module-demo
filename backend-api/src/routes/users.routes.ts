@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import Joi from 'joi';
 import { authenticateJwt } from '../auth/jwt.middleware';
 import { requirePermission, enforceScopeForUser, resolveScope, getScopedStudentIds } from '../auth/rbac.middleware';
-import { validateJoi as validate } from '../middleware/validate.middleware';
+import { validate } from '../middleware/validate.middleware';
 import { logger } from '../utils/logger';
 import prisma from '../utils/prisma';
 import { hashToken, generateRawToken } from '../utils/token';

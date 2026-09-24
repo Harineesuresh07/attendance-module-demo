@@ -6,25 +6,31 @@ import {
   submitScoresSchema,
 } from "../validators/assessments.validator";
 
+function isValid(schema: any, data: any): boolean {
+  const { error } = schema.validate(data, { abortEarly: false });
+  return !error;
+}
+
+function getErrors(schema: any, data: any): string {
+  const { error } = schema.validate(data, { abortEarly: false });
+  return error ? error.details.map((d: any) => d.message).join(" ") : "";
+}
+
 describe("Assessment Validators", () => {
   describe("createAssessmentSchema", () => {
     const validBase = {
       batchId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
       title: "Midterm Exam",
       type: "QUIZ",
-      assessmentDate: "2026-10-01T10:00:00Z",
+      assessmentDate: "2026-10-01",
     };
 
     it("should accept valid assessment without sections", () => {
-      const result = createAssessmentSchema.safeParse({
-        ...validBase,
-        maxScore: 100,
-      });
-      expect(result.success).toBe(true);
+      expect(isValid(createAssessmentSchema, { ...validBase, maxScore: 100 })).toBe(true);
     });
 
     it("should accept valid assessment with sections and questions", () => {
-      const result = createAssessmentSchema.safeParse({
+      expect(isValid(createAssessmentSchema, {
         ...validBase,
         sections: [
           {
@@ -41,293 +47,186 @@ describe("Assessment Validators", () => {
             questions: [{ label: "Q1", maxScore: 25 }],
           },
         ],
-      });
-      expect(result.success).toBe(true);
+      })).toBe(true);
     });
 
     it("should reject empty title", () => {
-      const result = createAssessmentSchema.safeParse({
-        ...validBase,
-        title: "",
-      });
-      expect(result.success).toBe(false);
+      expect(isValid(createAssessmentSchema, { ...validBase, title: "" })).toBe(false);
     });
 
     it("should reject invalid batchId", () => {
-      const result = createAssessmentSchema.safeParse({
-        ...validBase,
-        batchId: "not-a-uuid",
-      });
-      expect(result.success).toBe(false);
+      expect(isValid(createAssessmentSchema, { ...validBase, batchId: "not-a-uuid" })).toBe(false);
     });
 
     it("should reject invalid type", () => {
-      const result = createAssessmentSchema.safeParse({
-        ...validBase,
-        type: "INVALID_TYPE",
-      });
-      expect(result.success).toBe(false);
+      expect(isValid(createAssessmentSchema, { ...validBase, type: "INVALID_TYPE" })).toBe(false);
     });
 
     it("should reject invalid date", () => {
-      const result = createAssessmentSchema.safeParse({
-        ...validBase,
-        assessmentDate: "not-a-date",
-      });
-      expect(result.success).toBe(false);
+      expect(isValid(createAssessmentSchema, { ...validBase, assessmentDate: "not-a-date" })).toBe(false);
     });
 
     it("should reject partial weightage (some sections have it, some don't)", () => {
-      const result = createAssessmentSchema.safeParse({
+      const result = createAssessmentSchema.validate({
         ...validBase,
         sections: [
-          {
-            title: "Section A",
-            weightage: 50,
-            questions: [{ label: "Q1", maxScore: 10 }],
-          },
-          {
-            title: "Section B",
-            questions: [{ label: "Q1", maxScore: 10 }],
-          },
+          { title: "Section A", weightage: 50, questions: [{ label: "Q1", maxScore: 10 }] },
+          { title: "Section B", questions: [{ label: "Q1", maxScore: 10 }] },
         ],
       });
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        const msg = result.error.issues.map((i) => i.message).join(" ");
-        expect(msg).toContain("weightage");
-      }
+      expect(!!result.error).toBe(true);
+      expect(result.error!.details.map((d: any) => d.message).join(" ")).toContain("weightage");
     });
 
     it("should reject weightages that don't total 100%", () => {
-      const result = createAssessmentSchema.safeParse({
+      const result = createAssessmentSchema.validate({
         ...validBase,
         sections: [
-          {
-            title: "Section A",
-            weightage: 50,
-            questions: [{ label: "Q1", maxScore: 10 }],
-          },
-          {
-            title: "Section B",
-            weightage: 30,
-            questions: [{ label: "Q1", maxScore: 10 }],
-          },
+          { title: "Section A", weightage: 50, questions: [{ label: "Q1", maxScore: 10 }] },
+          { title: "Section B", weightage: 30, questions: [{ label: "Q1", maxScore: 10 }] },
         ],
       });
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        const msg = result.error.issues.map((i) => i.message).join(" ");
-        expect(msg).toContain("100%");
-      }
+      expect(!!result.error).toBe(true);
+      expect(result.error!.details.map((d: any) => d.message).join(" ")).toContain("100%");
     });
 
     it("should accept weightages totaling exactly 100%", () => {
-      const result = createAssessmentSchema.safeParse({
+      expect(isValid(createAssessmentSchema, {
         ...validBase,
         sections: [
-          {
-            title: "Section A",
-            weightage: 60,
-            questions: [{ label: "Q1", maxScore: 10 }],
-          },
-          {
-            title: "Section B",
-            weightage: 40,
-            questions: [{ label: "Q1", maxScore: 15 }],
-          },
+          { title: "Section A", weightage: 60, questions: [{ label: "Q1", maxScore: 10 }] },
+          { title: "Section B", weightage: 40, questions: [{ label: "Q1", maxScore: 15 }] },
         ],
-      });
-      expect(result.success).toBe(true);
+      })).toBe(true);
     });
 
     it("should accept sections without weightage (all omitted)", () => {
-      const result = createAssessmentSchema.safeParse({
+      expect(isValid(createAssessmentSchema, {
         ...validBase,
         sections: [
-          {
-            title: "Section A",
-            questions: [{ label: "Q1", maxScore: 10 }],
-          },
-          {
-            title: "Section B",
-            questions: [{ label: "Q1", maxScore: 20 }],
-          },
+          { title: "Section A", questions: [{ label: "Q1", maxScore: 10 }] },
+          { title: "Section B", questions: [{ label: "Q1", maxScore: 20 }] },
         ],
-      });
-      expect(result.success).toBe(true);
+      })).toBe(true);
     });
 
     it("should reject section with no questions", () => {
-      const result = createAssessmentSchema.safeParse({
+      expect(isValid(createAssessmentSchema, {
         ...validBase,
-        sections: [
-          {
-            title: "Section A",
-            questions: [],
-          },
-        ],
-      });
-      expect(result.success).toBe(false);
+        sections: [{ title: "Section A", questions: [] }],
+      })).toBe(false);
     });
 
     it("should reject question with zero maxScore", () => {
-      const result = createAssessmentSchema.safeParse({
+      expect(isValid(createAssessmentSchema, {
         ...validBase,
-        sections: [
-          {
-            title: "Section A",
-            questions: [{ label: "Q1", maxScore: 0 }],
-          },
-        ],
-      });
-      expect(result.success).toBe(false);
+        sections: [{ title: "Section A", questions: [{ label: "Q1", maxScore: 0 }] }],
+      })).toBe(false);
     });
 
     it("should reject question with negative maxScore", () => {
-      const result = createAssessmentSchema.safeParse({
+      expect(isValid(createAssessmentSchema, {
         ...validBase,
-        sections: [
-          {
-            title: "Section A",
-            questions: [{ label: "Q1", maxScore: -5 }],
-          },
-        ],
-      });
-      expect(result.success).toBe(false);
+        sections: [{ title: "Section A", questions: [{ label: "Q1", maxScore: -5 }] }],
+      })).toBe(false);
     });
 
     it("should accept all four assessment types", () => {
       for (const type of ["CODING_TEST", "QUIZ", "ASSIGNMENT", "CONTEST"]) {
-        const result = createAssessmentSchema.safeParse({
-          ...validBase,
-          type,
-        });
-        expect(result.success).toBe(true);
+        expect(isValid(createAssessmentSchema, { ...validBase, type })).toBe(true);
       }
     });
   });
 
   describe("updateAssessmentSchema", () => {
     it("should accept partial update with title only", () => {
-      const result = updateAssessmentSchema.safeParse({ title: "Updated Title" });
-      expect(result.success).toBe(true);
+      expect(isValid(updateAssessmentSchema, { title: "Updated Title" })).toBe(true);
     });
 
     it("should accept empty object (no fields updated)", () => {
-      const result = updateAssessmentSchema.safeParse({});
-      expect(result.success).toBe(true);
+      expect(isValid(updateAssessmentSchema, {})).toBe(true);
     });
 
     it("should reject empty title string", () => {
-      const result = updateAssessmentSchema.safeParse({ title: "" });
-      expect(result.success).toBe(false);
+      expect(isValid(updateAssessmentSchema, { title: "" })).toBe(false);
     });
   });
 
   describe("addSectionSchema", () => {
     it("should accept valid section", () => {
-      const result = addSectionSchema.safeParse({ title: "New Section" });
-      expect(result.success).toBe(true);
+      expect(isValid(addSectionSchema, { title: "New Section" })).toBe(true);
     });
 
     it("should accept section with weightage", () => {
-      const result = addSectionSchema.safeParse({
-        title: "New Section",
-        weightage: 50,
-        sortOrder: 1,
-      });
-      expect(result.success).toBe(true);
+      expect(isValid(addSectionSchema, { title: "New Section", weightage: 50, sortOrder: 1 })).toBe(true);
     });
 
     it("should reject empty title", () => {
-      const result = addSectionSchema.safeParse({ title: "" });
-      expect(result.success).toBe(false);
+      expect(isValid(addSectionSchema, { title: "" })).toBe(false);
     });
 
     it("should reject weightage over 100", () => {
-      const result = addSectionSchema.safeParse({
-        title: "Section",
-        weightage: 150,
-      });
-      expect(result.success).toBe(false);
+      expect(isValid(addSectionSchema, { title: "Section", weightage: 150 })).toBe(false);
     });
   });
 
   describe("addQuestionSchema", () => {
     it("should accept valid question", () => {
-      const result = addQuestionSchema.safeParse({ label: "Q1", maxScore: 10 });
-      expect(result.success).toBe(true);
+      expect(isValid(addQuestionSchema, { label: "Q1", maxScore: 10 })).toBe(true);
     });
 
     it("should reject missing label", () => {
-      const result = addQuestionSchema.safeParse({ maxScore: 10 });
-      expect(result.success).toBe(false);
+      expect(isValid(addQuestionSchema, { maxScore: 10 })).toBe(false);
     });
 
     it("should reject zero maxScore", () => {
-      const result = addQuestionSchema.safeParse({ label: "Q1", maxScore: 0 });
-      expect(result.success).toBe(false);
+      expect(isValid(addQuestionSchema, { label: "Q1", maxScore: 0 })).toBe(false);
     });
   });
 
   describe("submitScoresSchema", () => {
     it("should accept valid score submission", () => {
-      const result = submitScoresSchema.safeParse({
+      expect(isValid(submitScoresSchema, {
         studentId: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
         questionScores: [
-          {
-            questionId: "c1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-            score: 8,
-          },
+          { questionId: "c1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", score: 8 },
         ],
-      });
-      expect(result.success).toBe(true);
+      })).toBe(true);
     });
 
     it("should reject negative score", () => {
-      const result = submitScoresSchema.safeParse({
+      expect(isValid(submitScoresSchema, {
         studentId: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
         questionScores: [
-          {
-            questionId: "c1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-            score: -5,
-          },
+          { questionId: "c1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", score: -5 },
         ],
-      });
-      expect(result.success).toBe(false);
+      })).toBe(false);
     });
 
     it("should reject invalid studentId", () => {
-      const result = submitScoresSchema.safeParse({
+      expect(isValid(submitScoresSchema, {
         studentId: "not-uuid",
         questionScores: [
-          {
-            questionId: "c1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-            score: 10,
-          },
+          { questionId: "c1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", score: 10 },
         ],
-      });
-      expect(result.success).toBe(false);
+      })).toBe(false);
     });
 
     it("should reject empty questionScores array", () => {
-      const result = submitScoresSchema.safeParse({
+      expect(isValid(submitScoresSchema, {
         studentId: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
         questionScores: [],
-      });
-      expect(result.success).toBe(false);
+      })).toBe(false);
     });
 
     it("should accept optional remarks", () => {
-      const result = submitScoresSchema.safeParse({
+      expect(isValid(submitScoresSchema, {
         studentId: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
         questionScores: [
           { questionId: "c1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", score: 10 },
         ],
         remarks: "Good performance",
-      });
-      expect(result.success).toBe(true);
+      })).toBe(true);
     });
   });
 });
@@ -415,9 +314,6 @@ describe("Score calculation logic", () => {
         ],
       },
     ];
-    // Section A: (20/20) * 40 = 40
-    // Section B: (25/50) * 60 = 30
-    // Total = 70 out of 100
     expect(calculateOverall(sections)).toBe(70);
   });
 
@@ -432,9 +328,6 @@ describe("Score calculation logic", () => {
         questions: [{ maxScore: 100, score: 80 }],
       },
     ];
-    // Section A: (50/100) * 30 = 15
-    // Section B: (80/100) * 70 = 56
-    // Total = 71 out of 100
     expect(calculateOverall(sections)).toBe(71);
   });
 

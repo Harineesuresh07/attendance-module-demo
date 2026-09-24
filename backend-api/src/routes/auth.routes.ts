@@ -11,7 +11,7 @@ import {
   changePassword,
 } from '../auth/auth.controller';
 import { authenticateJwt } from '../auth/jwt.middleware';
-import { validateJoi as validate } from '../middleware/validate.middleware';
+import { validate } from '../middleware/validate.middleware';
 import { authRateLimit, strictAuthRateLimit } from '../middleware/rate-limit.middleware';
 
 const router = Router();
