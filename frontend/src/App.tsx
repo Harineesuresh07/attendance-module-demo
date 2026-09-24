@@ -4,6 +4,9 @@ import AssessmentCreate from "./pages/assessments/AssessmentCreate";
 import AssessmentDetail from "./pages/assessments/AssessmentDetail";
 import ScoreEntry from "./pages/assessments/ScoreEntry";
 import BulkUpload from "./pages/assessments/BulkUpload";
+import BatchList from "./pages/batches/BatchList";
+import BatchCreate from "./pages/batches/BatchCreate";
+import BatchDetail from "./pages/batches/BatchDetail";
 
 function App() {
   return (
@@ -16,6 +19,9 @@ function App() {
           <Link to="/assessments" className="text-gray-600 hover:text-gray-900">
             Assessments
           </Link>
+          <Link to="/batches" className="text-gray-600 hover:text-gray-900">
+            Batches
+          </Link>
         </div>
       </nav>
       <main className="max-w-7xl mx-auto px-4 py-6">
@@ -27,6 +33,10 @@ function App() {
           <Route path="/assessments/:id" element={<AssessmentDetail />} />
           <Route path="/assessments/:id/scores" element={<ScoreEntry />} />
           <Route path="/assessments/:id/bulk-upload" element={<BulkUpload />} />
+          <Route path="/batches" element={<BatchList />} />
+          <Route path="/batches/create" element={<BatchCreate />} />
+          <Route path="/batches/:id/edit" element={<BatchCreate />} />
+          <Route path="/batches/:id" element={<BatchDetail />} />
         </Routes>
       </main>
     </div>
