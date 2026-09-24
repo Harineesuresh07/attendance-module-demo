@@ -1,22 +1,40 @@
-import express from "express";
-import cors from "cors";
-import assessmentRoutes from "./routes/assessments.routes";
-import { errorHandler } from "./middleware/error.middleware";
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import { config } from './config';
+import { logger } from './utils/logger';
+import { errorHandler } from './middleware/error.middleware';
+import { generalRateLimit } from './middleware/rate-limit.middleware';
+import authRoutes from './routes/auth.routes';
+import usersRoutes from './routes/users.routes';
+import assessmentRoutes from './routes/assessments.routes';
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+  origin: config.frontendUrl,
+  credentials: true,
+}));
 
-// TODO: Add Module 2 auth middleware when ready
+app.use(express.json({ limit: '5mb' }));
+app.use(cookieParser());
+app.use(generalRateLimit);
 
-app.use("/api/assessments", assessmentRoutes);
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.use('/auth', authRoutes);
+app.use('/users', usersRoutes);
+app.use('/admin/users', usersRoutes);
+app.use('/api/assessments', assessmentRoutes);
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(config.port, () => {
+    logger.info(`Server running on port ${config.port} (${config.nodeEnv})`);
+  });
+}
 
 export default app;

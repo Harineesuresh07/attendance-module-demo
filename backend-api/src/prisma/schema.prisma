@@ -8,6 +8,7 @@ datasource db {
 }
 
 enum UserStatus {
+  PENDING
   ACTIVE
   INACTIVE
 }
@@ -103,7 +104,7 @@ model User {
   @@map("users")
   name         String
   email        String  @unique
-  passwordHash String
+  passwordHash String?
   phone        String?
 
   department String?
@@ -112,12 +113,14 @@ model User {
   roleId String
   role   Role   @relation(fields: [roleId], references: [id])
 
-  status UserStatus @default(ACTIVE)
+  status UserStatus @default(PENDING)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  refreshTokens RefreshToken[]
+  refreshTokens       RefreshToken[]
+  activationTokens    AccountActivationToken[]
+  passwordResetTokens PasswordResetToken[]
 
   batchMembers   BatchMember[]
   trainerBatches BatchTrainer[]
@@ -127,6 +130,7 @@ model User {
   assessmentResults AssessmentResult[]
 
   studentQuestionScores StudentQuestionScore[]
+
 
   feedbackReceived Feedback[] @relation("StudentFeedback")
   feedbackGiven    Feedback[] @relation("TrainerFeedback")
@@ -548,16 +552,56 @@ model RefreshToken {
   id String @id @default(uuid())
   @@map("refresh_tokens")
 
-  token String @unique
+  tokenHash String @unique
 
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  familyId        String
+  familyCreatedAt DateTime
 
   expiresAt DateTime
 
-  revoked Boolean @default(false)
+  revokedAt DateTime?
 
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([familyId])
+}
+
+model AccountActivationToken {
+  id String @id @default(uuid())
+  @@map("account_activation_tokens")
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash String @unique
+
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id String @id @default(uuid())
+  @@map("password_reset_tokens")
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash String @unique
+
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model AuditLog {
