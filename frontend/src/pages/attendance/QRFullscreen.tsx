@@ -20,10 +20,16 @@ export default function QRFullscreen() {
   const [qrData, setQrData] = useState<QRData | null>(null);
   const [countdown, setCountdown] = useState(0);
   const [error, setError] = useState('');
+  
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // NEW: A lock to prevent spamming the server if the network is slow
+  const isFetchingRef = useRef(false);
 
   async function fetchQR() {
-    if (!windowId) return;
+    // If we are already fetching, ignore the request
+    if (!windowId || isFetchingRef.current) return;
+    
+    isFetchingRef.current = true;
     try {
       const res = await getWindowQR(windowId);
       const data = res.data;
@@ -32,24 +38,25 @@ export default function QRFullscreen() {
       setError('');
     } catch {
       setError('Failed to generate QR code');
+    } finally {
+      isFetchingRef.current = false; // Release the lock
     }
   }
 
+  // 1. Initial fetch when the component mounts
   useEffect(() => {
     fetchQR();
-
-    const refreshInterval = setInterval(fetchQR, 60 * 1000);
-
-    return () => clearInterval(refreshInterval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowId]);
 
+  // 2. The single, synced countdown timer
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
 
     timerRef.current = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          fetchQR();
+          fetchQR(); 
           return 0;
         }
         return prev - 1;

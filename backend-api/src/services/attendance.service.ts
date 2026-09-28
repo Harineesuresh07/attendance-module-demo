@@ -43,11 +43,23 @@ export function generateQRToken(windowId: string): { token: string; expiresInSec
 
 function validateQRToken(windowId: string, token: string): boolean {
   const secret = getQRSecret(windowId);
-  const timeStep = Math.floor(Date.now() / 1000 / QR_ROTATION_SECONDS);
-  return (
-    generateTOTP(secret, timeStep) === token ||
-    generateTOTP(secret, timeStep - 1) === token
-  );
+  const nowInSeconds = Date.now() / 1000;
+  const timeStep = Math.floor(nowInSeconds / QR_ROTATION_SECONDS);
+
+  // 1. Check if token matches the current 60-second window
+  if (generateTOTP(secret, timeStep) === token) {
+    return true;
+  }
+
+  // 2. Allow a 5-second grace period for the previous window's token
+  const GRACE_PERIOD_SECONDS = 5;
+  const elapsedInCurrentWindow = nowInSeconds % QR_ROTATION_SECONDS;
+
+  if (elapsedInCurrentWindow < GRACE_PERIOD_SECONDS) {
+    return generateTOTP(secret, timeStep - 1) === token;
+  }
+
+  return false;
 }
 
 // --- Redis helpers ---
